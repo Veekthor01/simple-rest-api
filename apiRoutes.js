@@ -1,63 +1,72 @@
-const express = require("express");
+// routes.js
+const express = require('express');
 const router = express.Router();
+const ObjectId = require('mongodb').ObjectId;
+const connectToMongoDB = require('./db');
 
-// GET /crud
+// Read all items
 router.get('/', async (req, res) => {
-  try {
-    const db = req.app.locals.db;
-    const data = await db.collection('rests').find().toArray();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+    const db = await connectToMongoDB();
+    try {
+      const items = await db.collection('rests').find().toArray();
+      res.json(items);
+    } catch (error) {
+      console.error('Error reading items:', error);
+      res.status(500).json({ error: 'Error reading items' });
+    }
+  });
 
-// POST /crud
+// Create a new item
 router.post('/', async (req, res) => {
+  const db = await connectToMongoDB();
+  const newItem = req.body;
   try {
-    const db = req.app.locals.db;
-    const newData = req.body;
-    const result = await db.collection('rests').insertOne(newData);
-    res.status(201).json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    const result = await db.collection('rests').insertOne(newItem);
+    res.json(result);
+  } catch (error) {
+    console.error('Error creating item:', error);
+    res.status(500).json({ error: 'Error creating item' });
   }
 });
 
-// PUT /crud/:id
+// Update an item by ID
 router.put('/:id', async (req, res) => {
-    try {
-      const db = req.app.locals.db;
-      const updatedData = await db.collection('rests').updateOne(
-        { _id: req.params.id },
-        { $set: req.body }
-      );
-  
-      if (updatedData.modifiedCount === 0) {
-        throw new Error('Data not found');
-      }
-  
-      res.json({ message: 'Data updated successfully' });
-    } catch (err) {
-      res.status(404).json({ error: err.message });
+  const db = await connectToMongoDB();
+  const itemId = req.params.id;
+  const updatedItem = req.body;
+  const objectId = new ObjectId(itemId);
+  try {
+    const result = await db.collection('rests').updateOne(
+      { _id: objectId },
+      { $set: updatedItem }
+    );
+    if (result.matchedCount === 0) {
+      res.status(404).json({ error: 'Item not found' });
+    } else {
+      res.json({ message: 'Item updated successfully' });
     }
-  });
-  
-  // DELETE /crud/:id
-  router.delete('/:id', async (req, res) => {
-    try {
-      const db = req.app.locals.db;
-      const deletedData = await db.collection('rests').deleteOne({ _id: req.params.id });
-  
-      if (deletedData.deletedCount === 0) {
-        throw new Error('Data not found');
-      }
-  
-      res.json({ message: 'Data deleted successfully' });
-    } catch (err) {
-      res.status(404).json({ error: err.message });
+  } catch (error) {
+    console.error('Error updating item:', error);
+    res.status(500).json({ error: 'Error updating item' });
+  }
+});
+
+// Delete an item by ID
+router.delete('/:id', async (req, res) => {
+  const db = await connectToMongoDB();
+  const itemId = req.params.id;
+  const objectId = new ObjectId(itemId);
+  try {
+    const result = await db.collection('rests').deleteOne({ _id: objectId });
+    if (result.deletedCount === 0) {
+      res.status(404).json({ error: 'Item not found' });
+    } else {
+      res.json({ message: 'Item deleted successfully' });
     }
-  });
-  
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ error: 'Error deleting item' });
+  }
+});
 
 module.exports = router;
