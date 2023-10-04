@@ -1,8 +1,7 @@
-// routes.js
 const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
-const connectToMongoDB = require('./db');
+const { connectToMongoDB } = require("./db");
 
 // Read all items
 router.get('/', async (req, res) => {
