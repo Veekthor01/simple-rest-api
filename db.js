@@ -4,12 +4,16 @@ require("dotenv").config();
 const mongoURI = process.env.MONGODB_URI;
 
 const client = new MongoClient(mongoURI);
+let dbInstance = null; // Store the database instance
 
 async function connectToMongoDB() {
   try {
-    await client.connect();
-    console.log("Connected to MongoDB");
-    return client.db(); // Return the database instance
+    if (!dbInstance) {
+      await client.connect();
+      dbInstance = client.db(); // Store the database instance once
+      //console.log("Connected to MongoDB");
+    }
+    return dbInstance;
   } catch (err) {
     console.error(`MongoDB connection error: ${err}`);
     throw err;
@@ -20,13 +24,13 @@ async function connectToMongoDB() {
 async function closeMongoDBConnection() {
     try {
       await client.close();
-      console.log("MongoDB connection closed");
+      //console.log("MongoDB connection closed");
     } catch (err) {
       console.error(`Error closing MongoDB connection: ${err}`);
     }
   }
   
-  module.exports = {
-    connectToMongoDB,
-    closeMongoDBConnection,
-  };
+module.exports = {
+  connectToMongoDB,
+  closeMongoDBConnection,
+};
