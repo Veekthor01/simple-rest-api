@@ -4,9 +4,10 @@ const { closeMongoDBConnection } = require("./db");
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  //console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
 
+// Handle SIGTERM signal for graceful server shutdown
 process.on('SIGTERM', () => {
     console.info('SIGTERM signal received.');
     console.log('Closing http server.');
