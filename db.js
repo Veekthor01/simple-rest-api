@@ -6,12 +6,13 @@ const mongoURI = process.env.MONGODB_URI;
 const client = new MongoClient(mongoURI);
 let dbInstance = null; // Store the database instance
 
+// Function to establish a MongoDB connection or return an existing one.
 async function connectToMongoDB() {
   try {
     if (!dbInstance) {
       await client.connect();
       dbInstance = client.db(); // Store the database instance once
-      //console.log("Connected to MongoDB");
+      console.log("Connected to MongoDB");
     }
     return dbInstance;
   } catch (err) {
@@ -20,11 +21,11 @@ async function connectToMongoDB() {
   } 
 }
 
-// Add a function to close the MongoDB connection
+// Function to close the MongoDB connection gracefully.
 async function closeMongoDBConnection() {
     try {
       await client.close();
-      //console.log("MongoDB connection closed");
+      console.log("MongoDB connection closed");
     } catch (err) {
       console.error(`Error closing MongoDB connection: ${err}`);
     }
